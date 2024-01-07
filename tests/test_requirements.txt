@@ -3,6 +3,7 @@ pandas
 ipykernel
 requests
 matplotlib
+pyyaml
 pytest
 pytest-cov
-pyyaml
+-e .
