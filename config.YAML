@@ -15,6 +15,9 @@ legacy_data:
 data_storage:
   extraced_legacy_dir: data/legacy/extracted  # Extracted gw data here
   tmp_dir: data/tmp  # Used as tmp dir for various steps
+  latest_dir: data/latest  # Holds most up to date data
+
+base_url: https://fantasy.premierleague.com/api/
 
 patterns:
   gw_file: "*/gw.csv"  # Pattern for gw data

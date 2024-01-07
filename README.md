@@ -6,3 +6,4 @@
 * To recreate intial legacy data, run:
     * src/pipeline/extract_legacy_data.py
         * Make sure to save the legacy data according to your setup in the config.YAML file
+* Each Sunday at midnight, the extraction api script will run to ensure that the data is up to date
