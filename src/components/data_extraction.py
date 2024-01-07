@@ -9,27 +9,20 @@ from src.logger import logging
 
 from src.components.utils import _replace_years, _get_player_name
 
-cfg = load_config()
-gw_file_pattern = cfg["patterns"]["gw_file"]
-
-
 class LegacyDataExtractor:
-    def __init__(self, years, source_dir, extract_dir, tmp_dir) -> None:
+    def __init__(self, years, source_dir, extract_dir, tmp_dir, file_pattern) -> None:
         self.years = years
         self.source_dir = source_dir
         self.extract_dir = extract_dir
         self.tmp_dir = tmp_dir
-        self.file_pattern = gw_file_pattern
+        self.file_pattern = file_pattern
 
-        self._make_dirs()
-
-    def _make_dirs(self):
+    def make_dirs(self):
         os.makedirs(self.extract_dir, exist_ok=True)
         os.makedirs(self.tmp_dir, exist_ok=True)
 
     def _move_csv(self, filepath, year):
         player_name = _get_player_name(filepath)
-
         if player_name not in self.players:
             self.players.add(player_name)
             new_filename = f"{player_name}_20{year}.csv"
@@ -38,11 +31,8 @@ class LegacyDataExtractor:
 
             shutil.copy(filepath, new_path)
         else:
+            # player has dupliacte name, can be removed
             pass
-
-    def _find_csv(self, search_str, year):
-        for filepath in glob.glob(search_str):
-            self._move_csv(filepath, year)
 
     def extract_gw_data(self):
         """Extract the gameweek data from the legacy data"""
@@ -54,8 +44,10 @@ class LegacyDataExtractor:
             # update source dir for each year of data
             source_dir = _replace_years(self.source_dir, year)
             search_str = os.path.join(source_dir, self.file_pattern)
-
-            self._find_csv(search_str, year)
+            print(search_str)
+            for filepath in glob.glob(search_str):
+                print(filepath)
+                self._move_csv(filepath, year)
 
     def _combine_files(self, files: list) -> pd.DataFrame:
         sorted_files = sorted(files, key=lambda x: x[0])
@@ -85,16 +77,7 @@ class LegacyDataExtractor:
                 os.path.join(self.extract_dir, f"{name}.csv"), index=False
             )
 
-    def cleanup(self, remove_all_other_legacy):
+    def cleanup(self):
         shutil.rmtree(self.tmp_dir)
 
-        if remove_all_other_legacy:
-            shutil.copytree(self.extract_dir, self.tmp_dir)
-
-            all_legacy_dir = os.path.dirname(self.extract_dir)
-            shutil.rmtree(all_legacy_dir)
-
-            shutil.copytree(self.tmp_dir, self.extract_dir)
-            shutil.rmtree(self.tmp_dir)
-
-        logging.info(f"Cleanup complete, {self.tmp_dir}, {all_legacy_dir} deleted.")
+        logging.info(f"Cleanup complete, {self.tmp_dir} deleted.")

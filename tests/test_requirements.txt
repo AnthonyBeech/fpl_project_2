@@ -6,4 +6,5 @@ matplotlib
 pyyaml
 pytest
 pytest-cov
+pytest-mock
 -e .

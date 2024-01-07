@@ -1,7 +1,7 @@
-logs_dir: logs
+logs_dir: logs  # Any logging will be saved here
 
 legacy_data:
-  years: 
+  years:  # data years to be extracted. Can be adjusted
     - 16
     - 17
     - 18
@@ -10,11 +10,11 @@ legacy_data:
     - 21
     - 22
     - 23
-  source_dir: data/legacy/20yy_yy/players
+  source_dir: data/legacy/20yy_yy/players  # Location to read github legacy data
 
 data_storage:
-  extraced_legacy_dir: data/legacy/extracted
-  tmp_dir: data/tmp
+  extraced_legacy_dir: data/legacy/extracted  # Extracted gw data here
+  tmp_dir: data/tmp  # Used as tmp dir for various steps
 
 patterns:
-  gw_file: "*/gw.csv"
+  gw_file: "*/gw.csv"  # Pattern for gw data
