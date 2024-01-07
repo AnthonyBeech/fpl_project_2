@@ -1,1 +1,20 @@
-logs_dir: logs/
+logs_dir: logs
+
+legacy_data:
+  years: 
+    - 16
+    - 17
+    - 18
+    - 19
+    - 20
+    - 21
+    - 22
+    - 23
+  source_dir: data/legacy/20yy_yy/players
+
+data_storage:
+  extraced_legacy_dir: data/legacy/extracted
+  tmp_dir: data/tmp
+
+patterns:
+  gw_file: "*/gw.csv"
