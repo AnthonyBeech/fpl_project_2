@@ -1,0 +1,7 @@
+.env
+fpl_project.egg-info
+logs
+*__pycache__/
+notebooks
+data/legacy
+catboost_info
