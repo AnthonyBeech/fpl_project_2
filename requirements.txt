@@ -3,10 +3,5 @@ pandas
 ipykernel
 requests
 matplotlib
-scikit-learn
-catboost
-xgboost
-seaborn
-torch
-torchvision
+pyyaml
 -e .

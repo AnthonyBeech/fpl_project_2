@@ -1,0 +1,8 @@
+numpy
+pandas
+ipykernel
+requests
+matplotlib
+pytest
+pytest-cov
+pyyaml

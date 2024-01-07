@@ -5,3 +5,4 @@ logs
 notebooks
 data/legacy
 catboost_info
+.pytest_cache/
