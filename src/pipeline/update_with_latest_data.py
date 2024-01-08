@@ -9,3 +9,5 @@ extraced_legacy_dir = cfg["data_storage"]["extraced_legacy_dir"]
 latest_dir = cfg["latest_dir"]
 
 updater = UpdatePlayerData(base_url, extraced_legacy_dir, latest_dir)
+
+updater.process_player_data()

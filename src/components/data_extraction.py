@@ -10,7 +10,7 @@ from src.components.utils import (
     _get_player_name,
     _get_info_from_elements,
 )
-from src.components.fpl_requests import _get_player_data, _get_global_data
+from src.components.request_utils import _get_player_data, _get_global_data
 
 
 class LegacyDataExtractor:
