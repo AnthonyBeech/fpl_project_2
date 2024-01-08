@@ -102,29 +102,40 @@ class UpdatePlayerData:
         result_df = pd.concat([df, dfr], ignore_index=True)
         result_df["position"] = self.position
 
-        result_df.to_csv(f"{self.latest_dir}/{self.nm}.csv")
+        result_df.to_csv(f"{self.latest_dir}/{self.nm}")
 
     def process_player_data(self):
+        logging.info(f"Getting player data for processing")
+
         sdata = _get_global_data(self.base_url)
 
         nplayers = len(sdata["elements"])
 
-        for player in range(1, nplayers + 1):
+        for player in range(1, nplayers):
             self.nm, self.position = _get_info_from_elements(sdata, player)
 
+            logging.info(f"Updating player {self.nm}")
+
             try:
-                df = pd.read_csv(f"{self.latest_dir}/{self.nm}.csv")
+                df = pd.read_csv(f"{self.latest_dir}/{self.nm}")
                 if "position" in df.columns:
                     df = df.drop(["position"], axis=1)
             except Exception as e:
-                # If player in API request is not in legacy data then skip
+                logging.warning(f"No player csv at: {self.latest_dir}/{self.nm}")
                 continue
 
             edata = _get_player_data(self.base_url, player)
 
             if edata is None:
-                # If no individual player data in API
+                logging.warning(f"No player data in API")
                 continue
 
             self.dfr = _find_data_not_in_latest(edata, df)
             self._concat_and_save_df(self.dfr, df)
+
+    def cleanup(self):
+        """Remove any files not in the current API"""
+        for file_path in glob.glob(os.path.join(self.latest_dir, "*.csv")):
+            df = pd.read_csv(file_path)
+            if "position" not in df.columns:
+                os.remove(file_path)

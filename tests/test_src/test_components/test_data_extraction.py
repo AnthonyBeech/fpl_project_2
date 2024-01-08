@@ -35,10 +35,10 @@ def test_update_player_data(mocker):
     latest_dir = "tests/test_data/latest"
 
     mock_global_data = {
-        "elements": [0],
+        "elements": [0, 1],
     }
 
-    mock_info_from_elements = "fname_lname", "3"  # FWD
+    mock_info_from_elements = "fname_lname.csv", "3"  # FWD
 
     mock_player_data = {
         "history": [
@@ -137,6 +137,8 @@ def test_update_player_data(mocker):
     updater = UpdatePlayerData(base_url, extract_dir, latest_dir)
 
     updater.process_player_data()
+    
+    updater.cleanup()
 
-    assert updater.nm == "fname_lname" and updater.position == "3"
+    assert updater.nm == "fname_lname.csv" and updater.position == "3"
     assert os.path.exists(latest_dir)

@@ -2,6 +2,9 @@ import os
 import re
 import pandas as pd
 
+from src.logger import logging
+
+
 
 def _replace_years(year_string, year):
     return year_string.replace("yy_yy", f"{year}-{year+1}")
@@ -27,12 +30,12 @@ def _find_data_not_in_latest(edata, df):
     # reversed so that most recent is at top
     edata_r = list(reversed(edata["history"]))
 
-    print(edata_r)
-
     most_recent_kickoff = df["kickoff_time"].max()
 
     for i, data in enumerate(edata_r):
         if data["kickoff_time"] == most_recent_kickoff:
             break
+        
+    logging.info(f"{i} rows to add")
 
     return pd.DataFrame(edata_r[:i])
