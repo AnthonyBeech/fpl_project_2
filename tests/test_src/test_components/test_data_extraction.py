@@ -1,6 +1,4 @@
 import os
-from pytest_mock import mocker
-
 from src.components.data_extraction import LegacyDataExtractor, UpdatePlayerData
 
 years = [20, 21]
@@ -124,15 +122,15 @@ def test_update_player_data(mocker):
     }
 
     mocker.patch(
-        "src.components.request_utils._get_global_data",
+        "src.components.data_extraction._get_global_data",
         return_value=mock_global_data,
     )
     mocker.patch(
-        "src.components.utils._get_info_from_elements",
+        "src.components.data_extraction._get_info_from_elements",
         return_value=mock_info_from_elements,
     )
     mocker.patch(
-        "src.components.request_utils._get_player_data",
+        "src.components.data_extraction._get_player_data",
         return_value=mock_player_data,
     )
 

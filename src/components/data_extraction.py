@@ -9,6 +9,7 @@ from src.components.utils import (
     _replace_years,
     _get_player_name,
     _get_info_from_elements,
+    _find_data_not_in_latest,
 )
 from src.components.request_utils import _get_player_data, _get_global_data
 
@@ -48,9 +49,7 @@ class LegacyDataExtractor:
             # update source dir for each year of data
             source_dir = _replace_years(self.source_dir, year)
             search_str = os.path.join(source_dir, self.file_pattern)
-            print(search_str)
             for filepath in glob.glob(search_str):
-                print(filepath)
                 self._move_csv(filepath, year)
 
     def _combine_files(self, files: list) -> pd.DataFrame:
@@ -99,33 +98,22 @@ class UpdatePlayerData:
         if not os.path.exists(self.latest_dir):
             shutil.copytree(self.extraced_legacy_dir, self.latest_dir)
 
-    def _find_data_not_in_latest(edata, df):
-        edata_r = list(reversed(edata["history"]))
-
-        most_recent_kickoff = df["kickoff_time"].max()
-
-        for i, data in enumerate(edata_r):
-            if data["kickoff_time"] == most_recent_kickoff:
-                break
-
-        return pd.DataFrame(edata_r[:i])
-
     def _concat_and_save_df(self, dfr, df):
         result_df = pd.concat([df, dfr], ignore_index=True)
         result_df["position"] = self.position
 
-        result_df.to_csv(f"{self.latest_dir}/{self.nm}")
+        result_df.to_csv(f"{self.latest_dir}/{self.nm}.csv")
 
     def process_player_data(self):
         sdata = _get_global_data(self.base_url)
 
         nplayers = len(sdata["elements"])
 
-        for player in range(1, nplayers):
+        for player in range(1, nplayers + 1):
             self.nm, self.position = _get_info_from_elements(sdata, player)
 
             try:
-                df = pd.read_csv(f"{self.latest_dir}/{self.nm}")
+                df = pd.read_csv(f"{self.latest_dir}/{self.nm}.csv")
                 if "position" in df.columns:
                     df = df.drop(["position"], axis=1)
             except Exception as e:
@@ -138,5 +126,5 @@ class UpdatePlayerData:
                 # If no individual player data in API
                 continue
 
-            dfr = self._find_data_not_in_latest(edata, df)
-            self._concat_and_save_df(dfr, df)
+            self.dfr = _find_data_not_in_latest(edata, df)
+            self._concat_and_save_df(self.dfr, df)
