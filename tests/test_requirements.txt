@@ -7,4 +7,5 @@ pyyaml
 pytest
 pytest-cov
 pytest-mock
+requests-mock
 -e .
