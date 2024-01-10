@@ -4,6 +4,7 @@ ipykernel
 requests
 matplotlib
 pyyaml
+scikit-learn
 pytest
 pytest-cov
 pytest-mock

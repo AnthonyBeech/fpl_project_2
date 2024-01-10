@@ -16,8 +16,37 @@ data_storage:
   extraced_legacy_dir: data/legacy/extracted  # Extracted gw data here
   tmp_dir: data/tmp  # Used as tmp dir for various steps
   latest_dir: data/latest  # Holds most up to date data
+  transformed_dir: data/transformed
 
 base_url: https://fantasy.premierleague.com/api/
 
 patterns:
   gw_file: "*/gw.csv"  # Pattern for gw data
+
+tranformation_parameters:
+  overlap: 0  # length of time series for training (predict 3 games from 4)
+  keep_headers:
+    - assists
+    - bonus
+    - bps
+    - clean_sheets
+    - creativity
+    - goals_conceded
+    - goals_scored
+    - ict_index
+    - influence
+    - kickoff_time
+    - minutes
+    - own_goals
+    - penalties_missed
+    - penalties_saved
+    - red_cards
+    - saves
+    - team_a_score
+    - team_h_score
+    - threat
+    - value
+    - was_home
+    - yellow_cards
+    - starts
+    - position
