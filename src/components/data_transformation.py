@@ -1,4 +1,5 @@
 import os
+import shutil
 import pandas as pd
 
 from sklearn.impute import SimpleImputer
@@ -16,8 +17,6 @@ class DataCleaner:
         self.keep_headers = keep_headers
 
         self.original_df = None  # Save df before imputing and other trznsforms
-
-        os.makedirs(self.transformed_dir, exist_ok=True)
 
     def _load_data(self):
         self.df = pd.read_csv(self.csv_path)
@@ -67,7 +66,12 @@ class DataCleaner:
         
         self.df = result_df.iloc[:-N, :]
 
-    def _append_df_to_csv(self):
+    def _append_df_to_csv(self):        
+        if os.path.exists(self.transformed_dir):
+            shutil.rmtree(self.transformed_dir)
+            
+        os.makedirs(self.transformed_dir, exist_ok=True)
+        
         out_csv = self.transformed_dir + "/transformed.csv"
 
         file_exists = os.path.isfile(out_csv)

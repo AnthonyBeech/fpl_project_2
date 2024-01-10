@@ -6,7 +6,7 @@ from src.components.data_transformation import DataCleaner
 def test_clean_data():
     latest_dir = "tests/test_data/latest"
     transformed_dir = "tests/test_data/transformed"
-    overlap = 1
+    overlap = 0
     keep_headers = [
         "assists",
         "bonus",
