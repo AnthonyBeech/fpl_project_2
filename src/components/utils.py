@@ -49,7 +49,7 @@ def _find_data_not_in_latest(edata, df):
         if kickoff_time == most_recent_kickoff:
             break
 
-    logging.info(f"{i - start} rows to add")
+    logging.info(f"{i - start + 1} rows to add")
 
     return pd.DataFrame(list(reversed(edata_r[start:i])))
 

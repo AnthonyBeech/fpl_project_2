@@ -23,3 +23,15 @@ If we remove below the average we get something closer to reasonable:
 
 ![Example Image](../resources/mins_after_av_rmv.png)
 
+Maybe come back to this at a later stage.
+
+In terms of columns, we will start with fewer columns. As we know how points are calculated we can remove everything that is directly correlated like goals and assists. ICT is worth keeping and means we can remove the individual contributers like influence as they are strongly correlated. BPS gives some extra fine detail on performance so we will keep this. Penalties, cards and team score are not correlating to points so they can be removed. Was home also is not correlated so don't keep.
+
+We end up with a final list:
+* bps
+* ict_index
+* kickoff_time
+* minutes
+* value
+* position
+* points

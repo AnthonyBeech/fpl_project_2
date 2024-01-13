@@ -23,7 +23,7 @@ patterns:
   gw_file: "*/gw.csv"  # Pattern for gw data
 
 transformation_parameters:
-  overlap: 0  # length of time series for training (predict 3 games from 4)
+  overlap: 6  # length of time series for training (predict 3 games from 4)
   keep_headers:
     - assists
     - bonus

@@ -66,20 +66,50 @@ class DataCleaner:
         self.df = pd.DataFrame(imputer.fit_transform(self.df), columns=self.df.columns)
 
     def _overlap_data(self):
-        result_df = self.df.copy()
+        if self.overlap == 0:
+            self.df = self.df.drop('player', axis=1)
+            return 0
+
         N = self.overlap
+        result_df = self.df.copy()
+    
+        if len(self.df) >= N + 1:
+            for i in range(1, N + 1):
+                shifted_df = self.df.shift(-i)
+                shifted_df.columns = [f"{col}_{i}" for col in self.df.columns]
+                result_df = pd.concat([result_df, shifted_df], axis=1)
 
-        if N == 0:
-            return
+            result_df = result_df.iloc[:-(N), :]
 
-        for i in range(1, N + 1):
-            # Shift the DataFrame
-            shifted_df = self.df.shift(-i)
-            shifted_df.columns = [f"{col}_{i}" for col in self.df.columns]
-            result_df = pd.concat([result_df, shifted_df], axis=1)
+        # Rename the original columns with _0 suffix
+        n_cols = len(self.df.columns)
+        new_column_names = [f"{col}_{0}" if i < n_cols else col for i, col in enumerate(result_df.columns)]
+        result_df.columns = new_column_names
 
-        self.df = result_df.iloc[:-N, :]
+        # Drop the 'player' columns from the shifted DataFrames
+        columns_to_drop = [col for col in result_df.columns if 'player_' in col]
+        result_df = result_df.drop(columns=columns_to_drop)
 
+        self.df = result_df
+        
+    def _select_training_cols(self):
+        N = self.overlap
+        points_sum = 0
+        
+        for i in range(N//2, N+1):
+            points_column = f"points_{i}"
+            if points_column in self.df.columns:
+                points_sum += self.df[points_column]     
+                
+        drop_cols = [col for col in self.df.columns if int(col.split("_")[-1]) > N//2]
+        
+        self.df[f"{N//2}day_points"] = points_sum
+        
+        logging.info(f"Calculating {N//2}day_points")
+        
+        self.df = self.df.drop(drop_cols, axis=1)
+
+             
     def _append_df_to_csv(self):
         out_csv = self.transformed_dir + "/transformed.csv"
 
@@ -113,7 +143,22 @@ class DataCleaner:
         #  self._impute()  # Not needed as data is complete
         self._format_headers()
         self._remove_players_with_low_mins()
+        
+        final_keep_cols = [
+            "player",
+            "kickoff_time",
+            "position",
+            "minutes",
+            "value",
+            "bps",
+            "ict_index",
+            "points"]
+        
+        self.df = self.df[final_keep_cols]
+        
         self._overlap_data()
+        
+        self._select_training_cols()
 
         logging.info(f"Appending {csv} to {self.csv_path}")
 

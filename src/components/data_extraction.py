@@ -106,6 +106,7 @@ class UpdatePlayerData:
                 shutil.rmtree(self.tmp_dir)
             shutil.copytree(self.latest_dir, self.tmp_dir)
             shutil.rmtree(self.latest_dir)
+            os.mkdir(self.latest_dir)
 
     def _concat_and_save_df(self, dfr, df, player):
         result_df = pd.concat([df, dfr], ignore_index=True)
