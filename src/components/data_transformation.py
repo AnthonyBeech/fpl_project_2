@@ -51,6 +51,15 @@ class DataCleaner:
 
         self.df[int_cols] = self.df[int_cols].astype(int)
         self.df[object_cols] = self.df[object_cols].astype(object)
+        
+    def _remove_players_with_low_mins(self):
+        average_minutes_per_player = self.df.groupby('player')['minutes'].mean()
+
+        # Filter players with an average of 7 minutes or more
+        keep_players = average_minutes_per_player[average_minutes_per_player >= 32].index
+
+        # Filter the original DataFrame to keep only these players
+        self.df = self.df[self.df['player'].isin(keep_players)]
 
     def _impute(self):
         imputer = SimpleImputer(strategy="median")
@@ -103,6 +112,7 @@ class DataCleaner:
 
         #  self._impute()  # Not needed as data is complete
         self._format_headers()
+        self._remove_players_with_low_mins()
         self._overlap_data()
 
         logging.info(f"Appending {csv} to {self.csv_path}")
