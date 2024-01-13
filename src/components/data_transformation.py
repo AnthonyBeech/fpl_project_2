@@ -18,8 +18,16 @@ class DataCleaner:
 
         self.original_df = None  # Save df before imputing and other trznsforms
 
+        self._create_transformed_dir()
+
+    def _create_transformed_dir(self):
+        if os.path.exists(self.transformed_dir):
+            shutil.rmtree(self.transformed_dir)
+        os.makedirs(self.transformed_dir, exist_ok=True)
+
     def _load_data(self):
         self.df = pd.read_csv(self.csv_path)
+        logging.info(f"{len(self.df)} rows loaded")
 
     def _keep_headers(self):
         self.df = self.df[self.keep_headers]
@@ -36,8 +44,6 @@ class DataCleaner:
 
     def _calculate_points(self):
         self.df["points"] = self.df.apply(_calculate_fpl_score, axis=1)
-
-        self.original_df = self.df
 
     def _format_headers(self):
         object_cols = ["was_home", "position"]
@@ -62,16 +68,10 @@ class DataCleaner:
             shifted_df = self.df.shift(-i)
             shifted_df.columns = [f"{col}_{i}" for col in self.df.columns]
             result_df = pd.concat([result_df, shifted_df], axis=1)
-        print(len(result_df))
-        
+
         self.df = result_df.iloc[:-N, :]
 
-    def _append_df_to_csv(self):        
-        if os.path.exists(self.transformed_dir):
-            shutil.rmtree(self.transformed_dir)
-            
-        os.makedirs(self.transformed_dir, exist_ok=True)
-        
+    def _append_df_to_csv(self):
         out_csv = self.transformed_dir + "/transformed.csv"
 
         file_exists = os.path.isfile(out_csv)
@@ -82,20 +82,29 @@ class DataCleaner:
         out_csv_orig = f"{base}_orig{extension}"
 
         file_exists = os.path.isfile(out_csv_orig)
-        self.df.to_csv(out_csv_orig, mode="a", header=not file_exists, index=False)
+        self.original_df.to_csv(out_csv_orig, mode="a", header=not file_exists, index=False)
 
-    def clean(self, csv_path):
-        self.csv_path = os.path.join(self.latest_dir, csv_path)
+    def clean_and_append_to_main(self, csv):
+        logging.info(f"Loading {csv}")
+
+        self.csv_path = os.path.join(self.latest_dir, csv)
+
+        logging.info(f"Cleaning {csv}")
 
         self._load_data()
         self._convert_time()
         self._calculate_points()
+
         self._keep_headers()
 
         self.original_df = self.df  # copy original df before imputing
 
-        self._impute()
+        logging.info(f"Formatting {csv} for training")
+
+        #  self._impute()  # Not needed as data is complete
         self._format_headers()
         self._overlap_data()
+
+        logging.info(f"Appending {csv} to {self.csv_path}")
 
         self._append_df_to_csv()

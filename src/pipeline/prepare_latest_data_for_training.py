@@ -14,4 +14,4 @@ keep_headers = cfg["transformation_parameters"]["keep_headers"]
 transformer = DataCleaner(latest_dir, transformed_dir, overlap, keep_headers)
 
 for csv_path in os.listdir(latest_dir):
-    transformer.clean(csv_path)
+    transformer.clean_and_append_to_main(csv_path)

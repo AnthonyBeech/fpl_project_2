@@ -2,6 +2,8 @@ import requests
 import json
 import time
 
+from src.logger import logging
+
 
 def _get_global_data(base_url) -> dict:
     response = requests.get(base_url + "bootstrap-static/")
@@ -19,6 +21,7 @@ def _get_player_data(base_url, player_id: int) -> dict:
             response = requests.get(full_url)
         except:
             time.sleep(5)
+            logging.info("Waiting")
     if response.status_code != 200:
         return None
     return json.loads(response.text)

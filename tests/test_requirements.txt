@@ -3,6 +3,7 @@ pandas
 ipykernel
 requests
 matplotlib
+seaborn
 pyyaml
 scikit-learn
 pytest

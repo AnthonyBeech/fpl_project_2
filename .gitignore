@@ -8,3 +8,5 @@ catboost_info
 .coverage
 htmlcov
 .vscode
+data/legacy/*/*
+!data/legacy/extracted

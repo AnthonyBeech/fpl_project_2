@@ -9,7 +9,6 @@ legacy_data:
     - 20
     - 21
     - 22
-    - 23
   source_dir: data/legacy/20yy_yy/players  # Location to read github legacy data
 
 data_storage:
@@ -23,7 +22,7 @@ base_url: https://fantasy.premierleague.com/api/
 patterns:
   gw_file: "*/gw.csv"  # Pattern for gw data
 
-tranformation_parameters:
+transformation_parameters:
   overlap: 0  # length of time series for training (predict 3 games from 4)
   keep_headers:
     - assists
@@ -48,5 +47,5 @@ tranformation_parameters:
     - value
     - was_home
     - yellow_cards
-    - starts
     - position
+    - points

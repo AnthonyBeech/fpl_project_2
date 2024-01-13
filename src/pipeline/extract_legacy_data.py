@@ -18,4 +18,4 @@ extractor = LegacyDataExtractor(years, source_dir, extraced_legacy_dir, tmp_dir,
 extractor.make_dirs()
 extractor.extract_gw_data()
 extractor.combine_extracted_data()
-extractor.cleanup(remove_all_other_legacy=True)
+extractor.cleanup()

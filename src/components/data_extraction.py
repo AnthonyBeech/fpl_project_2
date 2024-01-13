@@ -87,20 +87,30 @@ class LegacyDataExtractor:
 
 
 class UpdatePlayerData:
-    def __init__(self, base_url, extraced_legacy_dir, latest_dir) -> None:
+    def __init__(self, base_url, extraced_legacy_dir, latest_dir, tmp_dir) -> None:
         self.base_url = base_url
         self.extraced_legacy_dir = extraced_legacy_dir
         self.latest_dir = latest_dir
+        self.tmp_dir = tmp_dir
 
-        self._move_data_to_latest_if_first_run()
+        self._move_data_and_make_latest_if_first_run()
 
-    def _move_data_to_latest_if_first_run(self):
+    def _move_data_and_make_latest_if_first_run(self):
         if not os.path.exists(self.latest_dir):
-            shutil.copytree(self.extraced_legacy_dir, self.latest_dir)
+            os.mkdir(self.latest_dir)
+            if os.path.exists(self.tmp_dir):
+                shutil.rmtree(self.tmp_dir)
+            shutil.copytree(self.extraced_legacy_dir, self.tmp_dir)
+        else:
+            if os.path.exists(self.tmp_dir):
+                shutil.rmtree(self.tmp_dir)
+            shutil.copytree(self.latest_dir, self.tmp_dir)
+            shutil.rmtree(self.latest_dir)
 
-    def _concat_and_save_df(self, dfr, df):
+    def _concat_and_save_df(self, dfr, df, player):
         result_df = pd.concat([df, dfr], ignore_index=True)
         result_df["position"] = self.position
+        result_df["player"] = player
 
         result_df.to_csv(f"{self.latest_dir}/{self.nm}")
 
@@ -114,28 +124,30 @@ class UpdatePlayerData:
         for player in range(1, nplayers):
             self.nm, self.position = _get_info_from_elements(sdata, player)
 
-            logging.info(f"Updating player {self.nm}")
+            logging.info(f"Updating player {player}/{nplayers-1}: {self.nm}")
 
             try:
-                df = pd.read_csv(f"{self.latest_dir}/{self.nm}")
+                df = pd.read_csv(f"{self.tmp_dir}/{self.nm}")
                 if "position" in df.columns:
                     df = df.drop(["position"], axis=1)
             except Exception as e:
-                logging.warning(f"No player csv at: {self.latest_dir}/{self.nm}")
-                continue
+                logging.warning(f"No player csv at: {self.tmp_dir}/{self.nm}")
+                df = pd.DataFrame()
 
             edata = _get_player_data(self.base_url, player)
 
             if edata is None:
-                logging.warning(f"No player data in API")
+                logging.warning(f"No player {player} in API")
                 continue
 
             self.dfr = _find_data_not_in_latest(edata, df)
-            self._concat_and_save_df(self.dfr, df)
+            if len(df) + len(self.dfr) < 1:
+                logging.warning(f"No data for {self.nm} yet")
+                continue
+
+            self._concat_and_save_df(self.dfr, df, player)
 
     def cleanup(self):
         """Remove any files not in the current API"""
-        for file_path in glob.glob(os.path.join(self.latest_dir, "*.csv")):
-            df = pd.read_csv(file_path)
-            if "position" not in df.columns:
-                os.remove(file_path)
+        if os.path.exists(self.tmp_dir):
+            shutil.rmtree(self.tmp_dir)
