@@ -4,7 +4,7 @@ This document is the first 9very rough look at the cleaned data to be used for b
 
 ## Looking at the distribution of each column and the correlation with points
 
-Firstly we plot each of the columns to see what were working with and what we wll keep for further analysis.
+Firstly we plot each of the columns to see what were working with and what we will keep for further analysis.
 
 
 ![Example Image](../resources/raw_data_all_plots.png)
