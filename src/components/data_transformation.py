@@ -96,7 +96,7 @@ class DataCleaner:
         N = self.overlap
         points_sum = 0
         
-        for i in range(N//2, N+1):
+        for i in range(N//2+1, N+1):
             points_column = f"points_{i}"
             if points_column in self.df.columns:
                 points_sum += self.df[points_column]     
@@ -114,7 +114,8 @@ class DataCleaner:
         out_csv = self.transformed_dir + "/transformed.csv"
 
         file_exists = os.path.isfile(out_csv)
-        self.df.to_csv(out_csv, mode="a", header=not file_exists, index=False)
+        if f"points_{self.overlap // 2}" in self.df.columns:
+            self.df.to_csv(out_csv, mode="a", header=not file_exists, index=False)
 
         # Also save without imputing for analysis
         base, extension = os.path.splitext(out_csv)
