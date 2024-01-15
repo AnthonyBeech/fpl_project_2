@@ -10,10 +10,11 @@ from src.components.utils import _calculate_fpl_score
 
 
 class DataCleaner:
-    def __init__(self, latest_dir, transformed_dir, overlap, keep_headers) -> None:
+    def __init__(self, latest_dir, transformed_dir, games_to_predict, games_for_prediction, keep_headers) -> None:
         self.latest_dir = latest_dir
         self.transformed_dir = transformed_dir
-        self.overlap = overlap
+        self.games_to_predict = games_to_predict
+        self.games_for_prediction = games_for_prediction
         self.keep_headers = keep_headers
 
         self.original_df = None  # Save df before imputing and other trznsforms
@@ -56,7 +57,7 @@ class DataCleaner:
         average_minutes_per_player = self.df.groupby('player')['minutes'].mean()
 
         # Filter players with an average of 7 minutes or more
-        keep_players = average_minutes_per_player[average_minutes_per_player >= 32].index
+        keep_players = average_minutes_per_player[average_minutes_per_player >= 80].index
 
         # Filter the original DataFrame to keep only these players
         self.df = self.df[self.df['player'].isin(keep_players)]
@@ -66,46 +67,49 @@ class DataCleaner:
         self.df = pd.DataFrame(imputer.fit_transform(self.df), columns=self.df.columns)
 
     def _overlap_data(self):
-        if self.overlap == 0:
+        if self.games_to_predict == 0 and self.games_for_prediction == 0:
             self.df = self.df.drop('player', axis=1)
             return 0
 
-        N = self.overlap
+        N = self.games_to_predict + self.games_for_prediction
         result_df = self.df.copy()
     
-        if len(self.df) >= N + 1:
-            for i in range(1, N + 1):
+        if len(self.df) >= N:
+            for i in range(1, N):
                 shifted_df = self.df.shift(-i)
                 shifted_df.columns = [f"{col}_{i}" for col in self.df.columns]
                 result_df = pd.concat([result_df, shifted_df], axis=1)
 
-            result_df = result_df.iloc[:-(N), :]
+            result_df = result_df.iloc[:-(N-1), :]
 
         # Rename the original columns with _0 suffix
         n_cols = len(self.df.columns)
         new_column_names = [f"{col}_{0}" if i < n_cols else col for i, col in enumerate(result_df.columns)]
         result_df.columns = new_column_names
 
-        # Drop the 'player' columns from the shifted DataFrames
+        # Drop the 'player' columns from the DataFrames
         columns_to_drop = [col for col in result_df.columns if 'player_' in col]
         result_df = result_df.drop(columns=columns_to_drop)
 
         self.df = result_df
         
     def _select_training_cols(self):
-        N = self.overlap
+        nfp = self.games_for_prediction
+        ntp = self.games_to_predict
+        tot = nfp+ntp
+        
         points_sum = 0
         
-        for i in range(N//2+1, N+1):
+        for i in range(nfp, tot):
             points_column = f"points_{i}"
             if points_column in self.df.columns:
                 points_sum += self.df[points_column]     
                 
-        drop_cols = [col for col in self.df.columns if int(col.split("_")[-1]) > N//2]
+        drop_cols = [col for col in self.df.columns if int(col.split("_")[-1]) > nfp-1]
         
-        self.df[f"{N//2}day_points"] = points_sum
+        self.df[f"{ntp}day_points"] = points_sum
         
-        logging.info(f"Calculating {N//2}day_points")
+        logging.info(f"Calculating {ntp}day_points")
         
         self.df = self.df.drop(drop_cols, axis=1)
 
@@ -114,7 +118,7 @@ class DataCleaner:
         out_csv = self.transformed_dir + "/transformed.csv"
 
         file_exists = os.path.isfile(out_csv)
-        if f"points_{self.overlap // 2}" in self.df.columns:
+        if f"points_{self.games_for_prediction-1}" in self.df.columns:
             self.df.to_csv(out_csv, mode="a", header=not file_exists, index=False)
 
         # Also save without imputing for analysis
@@ -161,6 +165,6 @@ class DataCleaner:
         
         self._select_training_cols()
 
-        logging.info(f"Appending {csv} to {self.csv_path}")
+        logging.info(f"Appending {csv} to {self.transformed_dir}")
 
         self._append_df_to_csv()

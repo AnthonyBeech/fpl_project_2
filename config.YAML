@@ -22,8 +22,9 @@ base_url: https://fantasy.premierleague.com/api/
 patterns:
   gw_file: "*/gw.csv"  # Pattern for gw data
 
-transformation_parameters:
-  overlap: 20  # length of time series for training (predict 3 games from 4)
+transformation_parameters:  # set both game vars to 0 to QC unfolder data. Otherwise both > 0
+  games_to_predict: 8
+  games_for_prediction: 3
   keep_headers:
     - assists
     - bonus
