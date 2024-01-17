@@ -6,7 +6,10 @@ matplotlib
 seaborn
 pyyaml
 scikit-learn
+xgboost
+flask
 pytest
+coverage
 pytest-cov
 pytest-mock
 requests-mock

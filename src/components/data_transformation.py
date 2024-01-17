@@ -10,7 +10,14 @@ from src.components.utils import _calculate_fpl_score
 
 
 class DataCleaner:
-    def __init__(self, latest_dir, transformed_dir, games_to_predict, games_for_prediction, keep_headers) -> None:
+    def __init__(
+        self,
+        latest_dir,
+        transformed_dir,
+        games_to_predict,
+        games_for_prediction,
+        keep_headers,
+    ) -> None:
         self.latest_dir = latest_dir
         self.transformed_dir = transformed_dir
         self.games_to_predict = games_to_predict
@@ -52,15 +59,17 @@ class DataCleaner:
 
         self.df[int_cols] = self.df[int_cols].astype(int)
         self.df[object_cols] = self.df[object_cols].astype(object)
-        
+
     def _remove_players_with_low_mins(self):
-        average_minutes_per_player = self.df.groupby('player')['minutes'].mean()
+        average_minutes_per_player = self.df.groupby("player")["minutes"].mean()
 
         # Filter players with an average of 7 minutes or more
-        keep_players = average_minutes_per_player[average_minutes_per_player >= 80].index
+        keep_players = average_minutes_per_player[
+            average_minutes_per_player >= 65
+        ].index
 
         # Filter the original DataFrame to keep only these players
-        self.df = self.df[self.df['player'].isin(keep_players)]
+        self.df = self.df[self.df["player"].isin(keep_players)]
 
     def _impute(self):
         imputer = SimpleImputer(strategy="median")
@@ -68,52 +77,56 @@ class DataCleaner:
 
     def _overlap_data(self):
         if self.games_to_predict == 0 and self.games_for_prediction == 0:
-            self.df = self.df.drop('player', axis=1)
+            self.df = self.df.drop("player", axis=1)
             return 0
 
         N = self.games_to_predict + self.games_for_prediction
         result_df = self.df.copy()
-    
+
         if len(self.df) >= N:
             for i in range(1, N):
                 shifted_df = self.df.shift(-i)
                 shifted_df.columns = [f"{col}_{i}" for col in self.df.columns]
                 result_df = pd.concat([result_df, shifted_df], axis=1)
 
-            result_df = result_df.iloc[:-(N-1), :]
+            result_df = result_df.iloc[: -(N - 1), :]
 
         # Rename the original columns with _0 suffix
         n_cols = len(self.df.columns)
-        new_column_names = [f"{col}_{0}" if i < n_cols else col for i, col in enumerate(result_df.columns)]
+        new_column_names = [
+            f"{col}_{0}" if i < n_cols else col
+            for i, col in enumerate(result_df.columns)
+        ]
         result_df.columns = new_column_names
 
         # Drop the 'player' columns from the DataFrames
-        columns_to_drop = [col for col in result_df.columns if 'player_' in col]
+        columns_to_drop = [col for col in result_df.columns if "player_" in col]
         result_df = result_df.drop(columns=columns_to_drop)
 
         self.df = result_df
-        
+
     def _select_training_cols(self):
         nfp = self.games_for_prediction
         ntp = self.games_to_predict
-        tot = nfp+ntp
-        
+        tot = nfp + ntp
+
         points_sum = 0
-        
+
         for i in range(nfp, tot):
             points_column = f"points_{i}"
             if points_column in self.df.columns:
-                points_sum += self.df[points_column]     
-                
-        drop_cols = [col for col in self.df.columns if int(col.split("_")[-1]) > nfp-1]
-        
+                points_sum += self.df[points_column]
+
+        drop_cols = [
+            col for col in self.df.columns if int(col.split("_")[-1]) > nfp - 1
+        ]
+
         self.df[f"{ntp}day_points"] = points_sum
-        
+
         logging.info(f"Calculating {ntp}day_points")
-        
+
         self.df = self.df.drop(drop_cols, axis=1)
 
-             
     def _append_df_to_csv(self):
         out_csv = self.transformed_dir + "/transformed.csv"
 
@@ -126,7 +139,9 @@ class DataCleaner:
         out_csv_orig = f"{base}_orig{extension}"
 
         file_exists = os.path.isfile(out_csv_orig)
-        self.original_df.to_csv(out_csv_orig, mode="a", header=not file_exists, index=False)
+        self.original_df.to_csv(
+            out_csv_orig, mode="a", header=not file_exists, index=False
+        )
 
     def clean_and_append_to_main(self, csv):
         logging.info(f"Loading {csv}")
@@ -148,7 +163,7 @@ class DataCleaner:
         #  self._impute()  # Not needed as data is complete
         self._format_headers()
         self._remove_players_with_low_mins()
-        
+
         final_keep_cols = [
             "player",
             "kickoff_time",
@@ -157,12 +172,13 @@ class DataCleaner:
             "value",
             "bps",
             "ict_index",
-            "points"]
-        
+            "points",
+        ]
+
         self.df = self.df[final_keep_cols]
-        
+
         self._overlap_data()
-        
+
         self._select_training_cols()
 
         logging.info(f"Appending {csv} to {self.transformed_dir}")

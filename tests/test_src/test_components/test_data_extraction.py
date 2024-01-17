@@ -134,7 +134,7 @@ def test_update_player_data(mocker):
         return_value=mock_player_data,
     )
 
-    updater = UpdatePlayerData(base_url, extract_dir, latest_dir)
+    updater = UpdatePlayerData(base_url, extract_dir, latest_dir, tmp_dir)
 
     updater.process_player_data()
     
