@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prediction Results</title>
+</head>
+<body>
+    <h1>Prediction Results</h1>
+    <table border="1">
+        <tr>
+            <!-- Assuming 'name' and 'points' are columns in your CSV -->
+            <th>Name</th>
+            <th>Points</th>
+        </tr>
+        {% for prediction in predictions %}
+            <tr>
+                <td>{{ prediction.name }}</td>
+                <td>{{ prediction.points }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

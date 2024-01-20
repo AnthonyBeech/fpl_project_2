@@ -22,8 +22,9 @@ def _get_info_from_elements(sdata, ID):
     fnm = sdata["elements"][ID]["first_name"]
     lnm = sdata["elements"][ID]["second_name"]
     nm = f"{fnm}_{lnm}.csv"
+    id = sdata["elements"][ID]["id"]
     position = sdata["element_types"][sdata["elements"][ID]["element_type"] - 1]["id"]
-    return nm, position
+    return nm, position, id
 
 
 def _find_data_not_in_latest(edata, df):

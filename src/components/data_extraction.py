@@ -108,10 +108,10 @@ class UpdatePlayerData:
             shutil.rmtree(self.latest_dir)
             os.mkdir(self.latest_dir)
 
-    def _concat_and_save_df(self, dfr, df, player):
+    def _concat_and_save_df(self, dfr, df, id):
         result_df = pd.concat([df, dfr], ignore_index=True)
         result_df["position"] = self.position
-        result_df["player"] = player
+        result_df["player"] = id
 
         result_df.to_csv(f"{self.latest_dir}/{self.nm}")
 
@@ -123,7 +123,7 @@ class UpdatePlayerData:
         nplayers = len(sdata["elements"])
 
         for player in range(1, nplayers):
-            self.nm, self.position = _get_info_from_elements(sdata, player)
+            self.nm, self.position, self.id = _get_info_from_elements(sdata, player)
 
             logging.info(f"Updating player {player}/{nplayers-1}: {self.nm}")
 
@@ -135,10 +135,10 @@ class UpdatePlayerData:
                 logging.warning(f"No player csv at: {self.tmp_dir}/{self.nm}")
                 df = pd.DataFrame()
 
-            edata = _get_player_data(self.base_url, player)
+            edata = _get_player_data(self.base_url, self.id)
 
             if edata is None:
-                logging.warning(f"No player {player} in API")
+                logging.warning(f"No player {self.id} in API")
                 continue
 
             self.dfr = _find_data_not_in_latest(edata, df)
@@ -146,7 +146,7 @@ class UpdatePlayerData:
                 logging.warning(f"No data for {self.nm} yet")
                 continue
 
-            self._concat_and_save_df(self.dfr, df, player)
+            self._concat_and_save_df(self.dfr, df, self.id)
 
     def cleanup(self):
         """Remove any files not in the current API"""

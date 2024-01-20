@@ -1,17 +1,14 @@
-"""THis script will form the blueprint for a flask app where each week a
-new model will be trained on the laest data by running src/pipeline/train.py.
-This script outputs a pickle file that will be used to make predictions along with plots
-and metrics that will be displayed on the flask app. Also the time of the last training
-will be displayed on the flask app. """
-
 import os
 import json
+import pandas as pd
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
+from .auth import login_required
 
-bp = Blueprint("train", __name__, url_prefix="/train")
+bp = Blueprint("train", __name__, url_prefix="/models")
 
 
-@bp.route("/")
+@bp.route("/train")
+@login_required
 def train():
     # Define the path to the static directory
     static_dir = "flask_main/flaskr/static"
@@ -26,3 +23,15 @@ def train():
 
     # Render the HTML template, passing the statistics and plot URL
     return render_template("train/index.html", stats=stats, plot_url=plot_url)
+
+
+@bp.route("/predict")
+@login_required
+def predict():
+    predictions_df = pd.read_csv("data/predicted/predict_data.csv")
+
+    # Convert the DataFrame to a list of dictionaries for easy rendering in HTML
+    predictions = predictions_df.to_dict(orient="records")
+
+    # Render the HTML template, passing the statistics, plot URL, and predictions
+    return render_template("predict/index.html", predictions=predictions)

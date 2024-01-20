@@ -3,8 +3,8 @@ import os
 from flask import Flask
 from . import db
 from . import auth
-from . import blog
-from . import train
+from . import home
+from . import models
 
 # flask --app flask_main.flaskr init-db
 # flask --app flask_main.flaskr run --debug
@@ -33,11 +33,11 @@ def create_app(test_config=None):
 
     db.init_app(app)
     
-    app.register_blueprint(train.bp)
+    app.register_blueprint(models.bp)
 
     app.register_blueprint(auth.bp)
 
-    app.register_blueprint(blog.bp)
+    app.register_blueprint(home.bp)
     app.add_url_rule("/", endpoint="index")
 
     return app
